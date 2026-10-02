@@ -4,14 +4,12 @@
 
 import psycopg2
 
-
 # Параметры подключения (замените на свои, если нужно)
 DB_HOST = "localhost"
 DB_PORT = "5432"
 DB_NAME = "bmi_history"
 DB_USER = "postgres"
 DB_PASSWORD = "1"   # ← сюда впишите свой пароль от postgres
-
 
 def get_connection():
     """Возвращает соединение с базой данных PostgreSQL."""
@@ -23,7 +21,6 @@ def get_connection():
         password=DB_PASSWORD,
     )
 
-
 def calculate_bmi(weight, height):
     """Вычисляет индекс массы тела.
 
@@ -32,7 +29,6 @@ def calculate_bmi(weight, height):
     :return: значение BMI (float)
     """
     return weight / (height ** 2)
-
 
 def get_category(bmi):
     """Возвращает текстовую категорию по значению BMI."""
@@ -43,7 +39,6 @@ def get_category(bmi):
     if bmi < 30:
         return "Избыточная масса"
     return "Ожирение"
-
 
 def save_bmi_record(weight, height, bmi, category):
     """Сохраняет результат расчёта в таблицу bmi_history."""
@@ -62,7 +57,6 @@ def save_bmi_record(weight, height, bmi, category):
             print("Запись успешно сохранена в базу данных.")
     finally:
         conn.close()
-
 
 def show_history(limit=10):
     """Выводит последние записи из истории расчётов."""
@@ -92,11 +86,28 @@ def show_history(limit=10):
     finally:
         conn.close()
 
+def delete_record(record_id):
+    """Удаляет запись из таблицы bmi_history по id."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM bmi_history WHERE id = %s",
+                (record_id,),
+            )
+            if cur.rowcount > 0:
+                conn.commit()
+                print(f"Запись #{record_id} успешно удалена.")
+            else:
+                print(f"Запись с id={record_id} не найдена.")
+    finally:
+        conn.close()
 
 if __name__ == "__main__":
     print("Клиент BMI + PostgreSQL")
     print("1 — рассчитать и сохранить")
     print("2 — показать историю")
+    print("3 — удалить запись по id")
     choice = input("Выбор: ").strip()
 
     if choice == "1":
@@ -108,5 +119,8 @@ if __name__ == "__main__":
         save_bmi_record(weight, height, bmi, category)
     elif choice == "2":
         show_history()
+    elif choice == "3":
+        record_id = int(input("Введите id записи для удаления: "))
+        delete_record(record_id)
     else:
         print("Неизвестный пункт меню.")
