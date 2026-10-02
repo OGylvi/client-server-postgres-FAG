@@ -86,23 +86,6 @@ def show_history(limit=10):
     finally:
         conn.close()
 
-def delete_record(record_id):
-   
-    """Удаляет запись из таблицы bmi_history по id."""
-    conn = get_connection()
-    try:
-        with conn.cursor() as cur:
-            cur.execute(
-                "DELETE FROM bmi_history WHERE id = %s",
-                (record_id,),
-            )
-            if cur.rowcount > 0:
-                conn.commit()
-                print(f"Запись #{record_id} успешно удалена.")
-            else:
-                print(f"Запись с id={record_id} не найдена.")
-    finally:
-        conn.close()
 
 if __name__ == "__main__":
     print("Клиент BMI + PostgreSQL")
